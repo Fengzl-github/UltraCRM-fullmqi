@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>设置参数</title>
+    <script type="text/javascript" src="/assets/libs/main.js"></script>
+    <link rel="stylesheet" href="css/set_sys_config.css?v=22" />
+</head>
+
+<body>
+    <div id="appfs">
+        <!-- 顶部按钮 -->
+        <div class="title_but">
+            <el-button type="success" @click="Save">保存</el-button>
+        </div>
+        <br />
+        <el-form :model="form" ref="form" label-width="250px">
+            <el-card class="box-card">
+                <div slot="header" class="clearfix">
+                    <span>竹间ASR-Rabbitmq参数设置 </span>
+                </div>
+                <el-form-item label="Rabbitmq IP地址" prop="ZhuJian_ASR_IP"
+                    :rules="[{ required: true, message: '请输入IP地址', trigger: 'blur' }]">
+                    <el-input v-model="form.ZhuJian_ASR_IP " class="input-text"></el-input>
+                </el-form-item>
+ 
+                <el-form-item label="每天录音文件执行时间区间">
+                    <el-col style="width: 200px;">
+                        <el-time-picker placeholder="开始时间" v-model="form.timer_Start_Time" style="width: 100%;"
+                            value-format="HH:mm:ss" default-value="00:00:00">
+                        </el-time-picker>
+                    </el-col>
+                    <el-col class="line" style="width: 20px;">至</el-col>
+                    <el-col style="width: 200px;">
+                        <el-time-picker placeholder="结束时间" v-model="form.timer_End_Time" style="width: 100%;"
+                            value-format="HH:mm:ss" default-value="23:59:59">
+                        </el-time-picker>
+                    </el-col>
+                </el-form-item>
+            </el-card>
+        </el-form>
+    </div>
+</body>
+<script>
+    let vData = {
+        form: {
+            ZhuJian_ASR_IP: "",
+            timer_Start_Time: '00:00:00',
+            timer_End_Time: '23:59:59'
+        }
+    };
+    //创建vue
+    let VM = new Vue({
+        el: '#appfs',
+        data: vData,
+        methods: {
+            Save() {
+                this.$confirm('确认保存信息吗?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.$refs['form'].validate((valid) => {
+                        if (valid) {
+                            saveData();
+                        } else {
+                            return false;
+                        }
+                    });
+                });
+            }
+        },
+        mounted() {
+            getData();
+        }
+    })
+
+    function saveData() {
+        console.log(vData.form);
+        var vJsonData = {
+            "DATA": JSON.stringify(vData.form)
+        };
+        axios.post("/ut_admin/set_config/asrconfig", vJsonData)
+            .then(function (response) {
+                let result = response.data;
+                if (result.indexOf("OK") == 0) {
+                    vueAlter(result);
+                    getData();
+                } else {
+                    vueAlter(result, 1);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+
+    }
+
+    //读取信息
+    function getData() {
+        axios.get("/ut_admin/get_config/asrconfig")
+            .then(function (response) {
+                let jnData = response.data;
+                if (jnData.RET == "FAIL") {
+                    vueAlter(jnData.data, 1);
+                } else {
+                    vData.form = JSON.parse(jnData.data);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+
+
+    //提示
+    function vueAlter(vData, nType) {
+        if (nType == 1) {
+            VM.$notify.error({
+                title: '错误',
+                message: vData,
+                duration: 1000 * 3
+            });
+        } else {
+            VM.$notify({
+                title: '成功',
+                message: vData,
+                type: 'success'
+            });
+        }
+    }
+</script>
+
+</html>

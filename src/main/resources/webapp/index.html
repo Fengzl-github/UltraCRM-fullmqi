@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta charset="utf-8"/>
+    <title>UltraCRM-MQI质检系统</title>
+    <script type="text/javascript" src="/assets/libs/main.js"></script>
+
+
+</head>
+
+<body>
+<div class="loginCard">
+    <div id="appfs">
+        <el-card class="box-card">
+            <div slot="header" class="clearfix">
+                <span><i class="el-icon-phone-outline"> UltraCRM-MQI质检系统</i></span>
+            </div>
+            <div>
+                <el-form :model="form" ref="form">
+                    <el-form-item label="" prop="uid" :rules="[{ required: true, message: '账号不能为空'}]">
+                        <el-input v-model="form.uid" autocomplete="off" placeholder="账号"
+                                  @keyup.enter.native="login"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="" prop="pwd" :rules="[{ required: true, message: '密码不能为空'}]">
+                        <el-input v-model="form.pwd" autocomplete="off" placeholder="密码" show-password
+                                  @keyup.enter.native="login"></el-input>
+                    </el-form-item>
+                </el-form>
+                <div style="color:red;">
+                    {{retInfo}}
+                </div>
+                <el-row style="padding-left:75%;">
+                    <el-button type="success" @click="login">登录</el-button>
+                </el-row>
+
+            </div>
+        </el-card>
+    </div>
+
+</div>
+<canvas width="1920" height="920"/>
+</body>
+<!-- <script type="text/javascript" src="/assets/libs/elvue/login_canvas.js"></script> -->
+<script>
+    let vData = {
+        retInfo: "",
+        form: {
+            uid: "",
+            pwd: ""
+        }
+    };
+    //创建vue
+    let VM = new Vue({
+        el: '#appfs',
+        data: vData,
+        methods: {
+            login() {
+                this.$refs['form'].validate((valid) => {
+                    if (valid) {
+                        vData.retInfo = "";
+                        submitLogin();
+                    } else {
+                        return false;
+                    }
+                });
+            }
+        }
+    })
+
+    function submitLogin() {
+        axios.post("sys/login/verification", vData.form
+        )
+            .then(function (response) {
+                try {
+                    let lret = response.data;
+                    console.log("lret==", lret);
+                    if (lret.code === 200) {
+                        myUtil.setToken(lret.data.TOKEN);
+                        document.location.href = "myindex.html";
+                    } else {
+                        vData.retInfo = lret.msg;
+                    }
+                } catch (error) {
+                    vData.retInfo = "提示: 发生未知的异常!"
+                }
+
+            })
+            .catch(function (error) {
+                console.log(response.data);
+            });
+    }
+
+    $(function () {
+        myUtil.setToken("");
+        //Cavasinit();
+    })
+
+
+</script>
+<style>
+    .loginCard {
+        position: absolute;
+        top: 10%;
+        width: 400px;
+        right: 100px;
+        font-family: "lato", sans-serif;
+        font-weight: 300;
+
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        background: #FFF url(/assets/images/bg.png) no-repeat 0 0;
+        overflow-x: hidden;
+        overflow-y: hidden;
+        background-size: 100%;
+    }
+
+    canvas {
+        display: block;
+    }
+</style>
+
+</html>

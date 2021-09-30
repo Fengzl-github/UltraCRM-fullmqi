@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>UltraCRM-MQI质检系统</title>
+    <script type="text/javascript" src="/assets/libs/main.js"></script>
+</head>
+
+<body>
+    <div id="appVM">
+        <el-container :style="mainStyle" class="page-sub-main">
+            <el-header class="header">
+                <el-menu class="el-menu-demo" mode="vertical" :background-color="mytheme.mycolor" text-color="#fff"
+                    active-text-color="#FDFCFD52">
+                    <el-menu-item v-show="!asideStyle.isCollapse" class="flLogo">UltraASR_Gate</el-menu-item>
+                    <el-menu-item v-show="asideStyle.isCollapse" class="flLogo2">
+
+                        <svg t="1563351300111" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" p-id="3372" width="32" height="32">
+                            <path
+                                d="M224 272c-27.2 0-48-20.8-48-48s20.8-48 48-48 48 20.8 48 48-20.8 48-48 48z m576 0c-27.2 0-48-20.8-48-48s20.8-48 48-48 48 20.8 48 48-20.8 48-48 48zM512 864c-180.8 0-344-108.8-412.8-275.2-6.4-16 1.6-35.2 17.6-41.6 16-6.4 35.2 1.6 41.6 17.6C217.6 707.2 356.8 800 512 800c155.2 0 294.4-92.8 355.2-236.8 6.4-16 25.6-24 41.6-17.6 16 6.4 24 25.6 17.6 41.6C856 755.2 692.8 864 512 864z"
+                                p-id="3373" :fill="myThemeColor(0)">
+                            </path>
+                        </svg>
+
+                    </el-menu-item>
+
+                    <el-menu-item style="float:left;" @click="toggleClick">
+                        <div>
+                            <svg :class="{'hamis-active':asideStyle.isCollapse}" class="hamburger"
+                                viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="164" height="164">
+                                <path fill="#FFF"
+                                    d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM142.4 642.1L298.7 519a8.84 8.84 0 0 0 0-13.9L142.4 381.9c-5.8-4.6-14.4-.5-14.4 6.9v246.3a8.9 8.9 0 0 0 14.4 7z" />
+                            </svg>
+                        </div>
+                    </el-menu-item>
+                    <el-menu-item class="fr"></el-menu-item>
+                    <el-menu-item class="fr">
+                        <el-dropdown @command="handleCommand">
+                            <span style="color:#FFF">
+                                <img src="assets/images/0.jpg" class="nav-img">管理员
+                            </span>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item command="lout">注销</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </el-menu-item>
+                    <el-menu-item class="fr">
+                        <div class="block">
+                            <span>主题颜色</span>
+                            <el-color-picker v-model="mytheme.mycolor" @change="themeChange"
+                                :predefine="mytheme.predefineColors">
+                            </el-color-picker>
+                        </div>
+                    </el-menu-item>
+                    <el-menu-item class="fr" @click="click">
+                        <div class="block">
+                            <svg class="icon" viewBox="0 0 1024 1024" version="1.1" width="25" height="25">
+                                <path fill="#FFF"
+                                    d="M674.414 394.644l253.292-252.418-0.868 143.044c-0.348 11.864 9.244 22.327 21.106 21.979h15.177c11.864-0.349 21.804-7.326 21.979-19.364l0.699-212.995c0-0.175 0.348-11.338 0.348-11.338 0.175-5.929-1.222-11.338-5.060-15.177-3.838-3.838-9.067-6.279-15.177-6.106l-10.816 0.175c-0.174 0-0.344 0-0.52 0.175l-211.252-0.875c-11.864 0.349-21.804 10.122-21.979 22.156v15.177c1.747 14.129 12.907 22.329 24.77 21.979l139.205 0.349-252.593 251.549c-11.514 11.514-11.514 30.177 0 41.689 11.514 11.688 30.18 11.688 41.693 0h-0.004zM355.18 632.585l-253.465 251.551 0.873-142.352c0.349-11.859-9.248-22.323-21.11-21.979h-16.046c-11.864 0.349-21.804 7.327-21.979 19.365l-0.699 213.17c0 0.175-0.348 11.338-0.348 11.338-0.175 5.936 1.222 11.338 5.055 15.177 3.838 3.838 9.073 6.279 15.177 6.106l10.815-0.175c0.175 0 0.349 0 0.525-0.175l212.125 0.874c11.859-0.349 21.804-10.117 21.979-22.156v-15.176c-1.746-14.129-12.91-22.329-24.775-21.979l-139.206-0.349 252.419-251.543c11.514-11.514 11.514-30.181 0-41.693-11.334-11.688-29.824-11.688-41.34 0.001v0zM985.799 952.339l-0.524-213.17c-0.349-11.865-10.122-19.016-21.98-19.365h-15.176c-11.865-0.344-21.283 10.122-21.111 21.979l0.874 143.049-253.466-252.247c-11.514-11.514-30.18-11.514-41.693 0-11.509 11.513-11.509 30.18 0 41.693l252.422 251.542-139.205 0.349c-11.864-0.349-22.852 8.024-24.774 21.979v15.177c0.348 11.864 10.122 21.804 21.979 22.156l211.253-0.874c0.174 0 0.348 0.175 0.524 0.175l10.816 0.175c5.928 0.174 11.338-2.093 15.176-6.106 3.838-3.838 5.232-9.243 5.056-15.177 0 0-0.175-11.164-0.175-11.338h0.005zM144.282 101.407l139.205-0.349c11.859 0.349 22.848-8.024 24.77-21.979v-15.179c-0.349-11.864-10.117-21.804-21.979-22.156l-212.296 0.874c-0.175 0-0.349-0.175-0.525-0.175l-10.814-0.175c-5.936-0.174-11.338 2.093-15.177 6.106-3.838 3.838-5.237 9.243-5.055 15.177 0 0 0.348 11.164 0.348 11.338l0.52 213.17c0.175 11.86 10.122 19.016 21.979 19.36h16.051c11.864 0.348 21.282-10.117 21.105-21.979l-0.698-142.346 253.296 251.725c11.508 11.514 30.176 11.514 41.688 0 11.514-11.514 11.514-30.18 0-41.693l-252.419-251.716zM144.282 101.407z">
+                                </path>
+                            </svg>
+                        </div>
+                    </el-menu-item>
+                </el-menu>
+            </el-header>
+            <el-container>
+                <el-aside :width="asideStyle.asidewidth">
+                    <el-menu :collapse="asideStyle.isCollapse" :collapse-transition="false" background-color="#2b3b59"
+                        text-color="#fff" :active-text-color="myThemeColor(1)" :default-openeds="elMenu.defaultOpeneds"
+                        style="height:100%;">
+
+                        <template v-for="item in MenuItems">
+                            <template v-if="item.children">
+                                <el-submenu :index="item.id" :key="item.id">
+                                    <template slot="title">
+                                        <i :class="item.icon" :style="iconStyle()"></i>
+                                        <span slot="title">{{ item.title }}</span>
+                                    </template>
+                                    <template v-for="subItem2 in item.children">
+                                        <el-submenu v-if="subItem2.children" :index="subItem2.id" :key="subItem2.id">
+                                            <template slot="title">
+                                                <i class="icon-chevron-right"></i>
+                                                <span :title="subItem2.title">{{ subItem2.title }}</span>
+                                            </template>
+                                            <template v-for="subItem3 in subItem2.children">
+                                                <el-submenu v-if="subItem3.children" :index="subItem3.id"
+                                                    :key="subItem3.id">
+                                                    <template slot="title">
+                                                        <i class="icon-chevron-right"></i>
+                                                        <span :title="subItem3.title"> {{ subItem3.title }}</span>
+                                                    </template>
+                                                    <el-menu-item v-for="subItem4 in subItem3.children"
+                                                        :key="subItem4.id" :index="subItem4.id"
+                                                        @click="addTab(subItem4.title,subItem4.url)">
+                                                        <i :class="subItem4.icon" :style="iconStyle()"></i>
+                                                        <span :title="subItem4.title">{{ subItem4.title }}</span>
+                                                    </el-menu-item>
+                                                </el-submenu>
+                                                <el-menu-item v-else :index="subItem3.id" :key="subItem3.id"
+                                                    @click="addTab(subItem3.title,subItem3.url)">
+                                                    <i :class="subItem3.icon" :style="iconStyle()"></i>
+                                                    <span :title="subItem3.title">{{ subItem3.title }}</span>
+                                                </el-menu-item>
+                                            </template>
+                                        </el-submenu>
+                                        <el-menu-item v-else :index="subItem2.id" :key="subItem2.id"
+                                            @click="addTab(subItem2.title,subItem2.url)">
+                                            <i :class="subItem2.icon" :style="iconStyle()"></i>
+                                            <span :title="subItem2.title">{{ subItem2.title }}</span>
+                                        </el-menu-item>
+                                    </template>
+                                </el-submenu>
+                            </template>
+                            <template v-else>
+                                <el-menu-item :index="item.id" :key="item.id" @click="addTab(item.title,item.url)">
+                                    <i :class="item.icon"></i>
+                                    <span slot="title">{{ item.title }}</span>
+                                </el-menu-item>
+                            </template>
+                        </template>
+
+                    </el-menu>
+
+                </el-aside>
+                <el-main>
+                    <div>
+                        <el-tabs style="width: calc(100% - 20px);" v-model="editableTabsValue" tab-position="top"
+                            @tab-remove="removeTab">
+                            <el-tab-pane key="a" name="a">
+                                <span slot="label" :style="tabStyle"><i class="el-icon-bell"></i>控制面板</span>
+                                <iframe src="main.html" scrolling="auto" frameborder="0" marginheight="0"
+                                    marginwidth="0" :style="iframestyle"></iframe>
+                            </el-tab-pane>
+                            <el-tab-pane closable v-for="(item, index) in editableTabs" :key="item.name"
+                                :name="item.name">
+                                <span slot="label" :style="tabStyle" @dblclick="dblclickIframe(item,index)">
+                                    {{item.title}}</span>
+                                <iframe :id="'iframeid'+index" :src="item.taburl" scrolling="auto" frameborder="0"
+                                    marginheight="0" marginwidth="0" :style="iframestyle"></iframe>
+                            </el-tab-pane>
+                        </el-tabs>
+                        <div style="position: absolute;width: 40px;height: 40px;top: 75px;right: 0px;">
+                            <el-dropdown @command="handleCommand">
+                                <i class="el-icon-arrow-down el-icon--right"></i>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item command="closec">关闭当前选项卡</el-dropdown-item>
+                                    <el-dropdown-item command="closeother">关闭其他选项卡</el-dropdown-item>
+                                    <el-dropdown-item command="closeall">关闭全部选项卡</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+                        </div>
+                    </div>
+
+                </el-main>
+            </el-container>
+        </el-container>
+    </div>
+</body>
+<script>
+    let vData = {
+        isFullscreen: false,
+        iframestyle: "minHeight:" + (window.innerHeight - 140) + "px;width:100%;",
+        mainStyle: {
+            minHeight: (window.innerHeight - 100) + 'px'
+        },
+        asideStyle: {
+            asidewidth: "200px",
+            isCollapse: false
+        },
+        mytheme: {
+            mycolor: "#4184C2",
+            predefineColors: [
+                '#409EFF',
+                '#fa541c',
+                '#fa8c16',
+                '#faad14',
+                '#E3C922',
+                '#a0d911',
+                '#52c41a',
+                '#13c2c2',
+                '#1890ff',
+                '#2f54eb',
+                '#722ed1',
+                '#eb2f96',
+                '#f5222d',
+                '#5F8DBC',
+                '#64715E',
+                '#1F9A9A',
+                '#4184C2',
+                '#EF7C55',
+                '#958837',
+                '#343955'
+            ]
+        },
+        tabStyle: {
+            color: "#4184C2",
+        },
+        elMenu: { //默认打开的卡片页
+            defaultOpeneds: ['1','2', '3']
+        },
+        editableTabsValue: 'a',
+        editableTabs: [],
+        tabIndex: 0,
+        MenuItems: [{
+                "id": "1",
+                "title": "系统管理",
+                "icon": "el-icon-monitor",
+                "url": "",
+                "children": [
+                    // {
+                    //     "id": "1-1",
+                    //     "title": "修改登录设置",
+                    //     "icon": "el-icon-position",
+                    //     "url": "/views/config/set_sys_agent_config.html"
+                    // },
+                    {
+                        "id": "1-2",
+                        "title": "参数设置",
+                        "icon": "el-icon-position",
+                        "url": "/views/config/set_sys_db_config.html"
+                    }
+                ]
+            },
+            {
+                "id": "2",
+                "title": "对接管理",
+                "icon": "icon-command",
+                "url": "",
+                "children": [
+                    {
+                        "id": "2-3",
+                        "title": "ASR参数设置",
+                        "icon": "el-icon-position",
+                        "url": "/views/config/set_asr_rabbitmq.html"
+                    },
+                    {
+                        "id": "2-4",
+                        "title": "测试rabbitmq",
+                        "icon": "el-icon-position",
+                        "url": "/test/rabbitmq.html"
+                    }
+                ]
+            },
+            {
+                "id": "3",
+                "title": "关键词管理",
+                "icon": "icon-horizontal-decrease",
+                "url": "",
+                "children": [{
+                        "id": "3-1",
+                        "title": "词库集合",
+                        "icon": "el-icon-position",
+                        "url": "/views/word/word_all_tables.html"
+                    },
+                    {
+                        "id": "3-2",
+                        "title": "接口说明",
+                        "icon": "el-icon-position",
+                        "url": "/views/word/word_interface_doc.html"
+                    }
+                ]
+            }
+        ]
+    };
+
+
+
+    //创建vue
+    let VM = new Vue({
+        el: '#appVM',
+        data: vData,
+        computed: {
+            iconStyle() {
+                return function () {
+                    let lColor = vData.mytheme.mycolor == '#343955' ? '#FFF' : vData.mytheme.mycolor;
+                    return "color:" + lColor + ";";
+                }
+            },
+            myThemeColor() {
+                return function (val) {
+                    let lsetColor = val == 0 ? '#FFF' : '#F28B1C';
+                    return vData.mytheme.mycolor == '#343955' ? lsetColor : vData.mytheme.mycolor;
+                }
+            }
+        },
+        methods: {
+            handleCommand(command) {
+                //console.log(this.editableTabsValue + "  " + this.tabIndex);
+                if (command == "lout") { //注销
+                    logoutToRedict();
+                } else if (command == "closec") {
+                    removeTabls(vData.editableTabsValue);
+                } else if (command == "closeother") {
+                    vData.editableTabs = vData.editableTabs.filter(tab => tab.name == vData.editableTabsValue);
+                } else if (command == "closeall") {
+                    vData.editableTabs = [];
+                    vData.editableTabsValue = 'a';
+                    vData.tabIndex = 0;
+                }
+            },
+            themeChange() {
+                ThemeColor(1);
+            },
+            toggleClick() { //切换左侧菜单折叠效果
+                vData.asideStyle.isCollapse = !vData.asideStyle.isCollapse;
+                vData.asideStyle.asidewidth = (vData.asideStyle.isCollapse == true ? "65px" : "200px");
+            },
+            addTab(targetName, url) {
+                addNewTabs(targetName, url);
+            },
+            removeTab(targetName) {
+                removeTabls(targetName);
+            },
+            click() {
+                screenfull.toggle();
+            },
+            dblclickIframe(item, index) { //双击刷新
+                document.getElementById('iframeid' + index).contentWindow.location.reload(true);
+                //item.taburl=item.taburl;
+            }
+        }
+    })
+
+    $(function () {
+        ThemeColor(0);
+        // testLogin();
+    })
+
+    function ThemeColor(nType) {
+        if (nType == 0) { //初始化读取主题颜色
+            let lColor = myUtil.getMyTheme();
+            if (lColor == null || lColor.length == 0) {
+                lColor = "#4184C2";
+            }
+            vData.tabStyle.color = lColor;
+            vData.mytheme.mycolor = lColor;
+
+        } else if (nType == 1) { //设置主题颜色
+            vData.tabStyle.color = vData.mytheme.mycolor;
+            myUtil.setMyTheme(vData.mytheme.mycolor);
+        }
+
+    }
+
+
+    function addNewTabs(targetName, url) {
+        //优先检测tabs卡片页是否已经存在,存在直接切换到卡片
+        let activeName = "";
+        let tabs = vData.editableTabs;
+        if (tabs.length > 0) {
+            tabs.forEach((tab, index) => {
+                if (tab.taburl === url) {
+                    activeName = tab.name;
+                }
+            });
+
+            if (activeName.length > 0) {
+                vData.editableTabsValue = activeName;
+                return;
+            }
+        }
+
+        //增加卡片页
+        let newTabName = ++vData.tabIndex + ''; //必须得是字符串类型
+        vData.editableTabs.push({
+            title: targetName,
+            name: newTabName,
+            taburl: url
+        });
+        vData.editableTabsValue = newTabName;
+    }
+
+    //移除tabs卡片页
+    function removeTabls(targetName) {
+        let tabs = vData.editableTabs;
+        let activeName = vData.editableTabsValue;
+        if (activeName === targetName) {
+            tabs.forEach((tab, index) => {
+                if (tab.name === targetName) {
+                    let nextTab = tabs[index + 1] || tabs[index - 1];
+                    if (nextTab) {
+                        activeName = nextTab.name;
+                    }
+                }
+            });
+        }
+
+        vData.editableTabsValue = activeName;
+        vData.editableTabs = tabs.filter(tab => tab.name !== targetName);
+
+        if (vData.editableTabs.length == 0) { //全都移除后,显示主页
+            vData.editableTabsValue = 'a';
+        }
+    }
+
+    //检测登录认证信息
+    /*function testLogin() {
+        let lToken = myUtil.getToken();
+        if (lToken.length <= 0) {
+            logoutToRedict();
+        }
+
+        axios.post("sys/loginverification/get_pmagent", {
+                token: lToken
+            })
+            .then(function (response) {
+                try {
+                    let lret = response.data;
+                    if (lret.code !== 200) {
+                        logoutToRedict();
+                    }
+                } catch (error) {
+                    logoutToRedict();
+                }
+            })
+            .catch(function (error) {
+                logoutToRedict();
+            });
+
+
+        setTimeout(() => {
+            testLogin();
+        }, 5000);
+    }*/
+</script>
+<style>
+    .hamburger {
+        display: inline-block;
+        vertical-align: middle;
+        width: 25px;
+        height: 25px;
+    }
+
+    .hamis-active {
+        transform: rotate(180deg);
+    }
+
+    .sidebar {
+        width: 200px;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-right: 1px solid #e6e6e6b6;
+        background-color: #ffffff;
+        z-index: 99;
+    }
+
+    .sidebar-hide {
+        width: 65px;
+    }
+
+    .el-container {
+        position: absolute;
+        width: 100%;
+        top: 0px;
+        left: 0;
+        bottom: 0;
+    }
+
+    .el-header {
+        padding: 0;
+        z-index: 1000;
+
+    }
+
+
+    .el-menu-item:hover {
+        background-color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* header菜单需要靠右的添加.fr即可(如：<el-menu-item class="fr" index="3">消息中心</el-menu-item>) */
+    .el-header .fr {
+        float: right;
+    }
+
+    .el-header .flLogo {
+        float: left;
+        width: 200px;
+        font-size: larger;
+        font-weight: bold;
+        border-right: 1px solid #c0c4cc;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .el-header .flLogo2 {
+        float: left;
+        width: 65px;
+        font-size: larger;
+        font-weight: bold;
+        border-right: 1px solid #c0c4cc;
+        text-align: center;
+        cursor: pointer;
+        background-color: #2b3b59 !important;
+    }
+
+
+    */ .el-header .el-menu {
+        border-bottom: none;
+    }
+
+    .el-aside,
+    .el-main {
+        padding-top: 55px;
+    }
+
+    .nav-img {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+        border-radius: 50%;
+    }
+
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        background: #545c640a;
+    }
+
+    /* #appfs {
+        height: 100%;
+    } */
+</style>
+
+</html>

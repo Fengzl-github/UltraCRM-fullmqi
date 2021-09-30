@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>词的管理</title>
+    <script type="text/javascript" src="/assets/libs/main.js"></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="appVM" v-cloak>
+
+        <el-card style="margin: 0 0;">
+            <div>
+                <el-form :inline="true" label-width="100px" :model="search" size="medium" @submit.native.prevent>
+                    <el-form-item label="唯一编号">
+                        <el-input v-model="search.form.WID" @input="searchForm()" placeholder="请输入编号">
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="企业名称">
+                        <el-input v-model="search.form.PROJ_NAME" @input="searchForm()" placeholder="请输入企业名称">
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="addNewWord">新增词库</el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
+
+            <el-table ref="tableDataItemRef" border size="medium" :data="tableData" style="width: 100%"
+                :height="tableHeight" element-loading-text="拼命加载中" fit highlight-current-row>
+                <el-table-column type="index" width="50">
+                </el-table-column>
+                <el-table-column prop="w_id" label="唯一编号" width="100" show-overflow-tooltip="true">
+                </el-table-column>
+                <el-table-column prop="w_name" label="企业名称" width="300" show-overflow-tooltip="true">
+                </el-table-column>
+                <!-- <el-table-column prop="WORD_DES" label="词库描述" width="0" show-overflow-tooltip="true">
+                </el-table-column> -->
+
+                <el-table-column prop="w_status" label="词库状态" width="120" show-overflow-tooltip="true">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.w_status==0">0-启用</span>
+                        <span v-if="scope.row.w_status==1">1-停用</span>
+                    </template>
+                </el-table-column>
+
+                <!-- <el-table-column prop="SDATE" label="开始日期" width="0" show-overflow-tooltip="true">
+                </el-table-column>
+                <el-table-column prop="STIME" label="开始时间" width="0" show-overflow-tooltip="true">
+                </el-table-column> -->
+                <el-table-column prop="ghid" label="创建人" width="0" show-overflow-tooltip="true">
+                </el-table-column>
+                <el-table-column align="right" width="250">
+                    <template slot-scope="scope">
+                        <el-button size="mini" @click="wordDetial(scope.row)">查看详情</el-button>
+                        <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                        <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除
+                        </el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-pagination background :page-sizes="[10, 100, 200, 300]" @size-change="handleSizeChange"
+                :page-size="tablePage.pageSize" @current-change="handleCurrentChange"
+                :current-page.sync="tablePage.currentPage" layout="total, sizes,prev, pager, next,jumper"
+                :total="tablePage.total">
+            </el-pagination>
+        </el-card>
+
+        <el-dialog :title="fromEdit.title" :visible.sync="dialogFormVisible" :modal="true" top="50px">
+            <el-form :model="form" ref="form" label-width="120px" size="medium" @submit.native.prevent>
+                <el-form-item label="唯一编号" prop="w_id"
+                    :rules="[{ required: true, message: '唯一编号不能为空'},{ pattern: /^[A-Za-z0-9]+$/, message: '只允许数字或英文组合' }]">
+                    <el-input v-model.trim="form.w_id" :disabled="fromEdit.status==1" autocomplete="off" maxlength="10"
+                        show-word-limit></el-input>
+                </el-form-item>
+                <el-form-item label="企业名称" prop="w_name" :rules="[{ required: true, message: '企业名称不能为空'}]">
+                    <el-input v-model.trim="form.w_name" autocomplete="off" maxlength="20" show-word-limit>
+                    </el-input>
+                </el-form-item>
+                <!-- <el-form-item label="词库描述" prop="WORD_DES" :rules="[{ required: true, message: '词库描述不能为空'}]">
+                    <el-input v-model.trim="form.WORD_DES" autocomplete="off" maxlength="20" show-word-limit></el-input>
+                </el-form-item> -->
+                <el-form-item label="词库状态" prop="w_status" :rules="[{ required: true, message: '词库状态不能为空'}]">
+                    <el-radio-group v-model="form.w_status">
+                        <el-radio-button :label="0">启动</el-radio-button>
+                        <el-radio-button :label="1">停用</el-radio-button>
+                    </el-radio-group>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button size="medium" @click="dialogFormVisible = false">取 消</el-button>
+                <el-button size="medium" type="primary" @click="submitForm()">保存</el-button>
+            </div>
+        </el-dialog>
+    </div>
+
+</body>
+<script type="text/javascript">
+    let vSearchFilter = "";//查询条件全局变量
+    var vData = {
+        tableHeight: $(document).height() - 150,
+        tableData: [],
+        tablePage: {
+            pageSize: 10,
+            currentPage: 1,
+            total: 0
+        },
+        search: {
+            form: {
+                WID: "",
+                PROJ_NAME: ""
+            }
+        },
+        testWord: {
+            QueryText: "",
+            QueryRet: ""
+        },
+        testWordJson: '',
+        dialogFormVisible: false,    //编辑表单
+        fromEdit: {
+            Status: 0, //0-新增状态;1-编辑状态
+            Title: "新增词库"  //头显示信息
+        },
+        formTemp: {
+            w_id: "",
+            w_name: "",
+            WORD_DES: "",
+            w_status: "0",
+            SDATE: "",
+            STIME: "",
+            ghid: "0"
+        },
+        form: {}
+    };
+
+    //创建vue
+    var VM = new Vue({
+        el: '#appVM',
+        data: vData,
+        methods: {
+            searchForm() {
+                btnSearch();
+            },
+            handleCurrentChange(val) {
+                getData(false);
+            },
+            handleSizeChange(val) {
+                vData.tablePage.currentPage = 1;
+                vData.tablePage.pageSize = val;
+                getData(false);
+            },
+            handleDelete(index, row) {//删除指定行
+                VM.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    lockScroll: false,
+                    type: 'warning'
+                }).then(() => {
+                    //开始执行删除
+                    delData(row, 1);
+                }).catch(() => {
+                });
+
+            },
+            submitForm() { //提交保存数据
+                this.$refs['form'].validate((valid) => {
+                    if (!valid) { return false; }
+                    saveData();
+                });
+            },
+            addNewWord() {
+                vData.fromEdit = {
+                    status: 0, //0-新增状态;1-编辑状态
+                    Title: "新增词库"  //头显示信息
+                }
+
+                vData.dialogFormVisible = true;
+                vData.form = JSON.parse(JSON.stringify(vData.formTemp));
+                this.$nextTick(() => {
+                    this.$refs['form'].resetFields();
+                })
+            },
+            handleEdit(index, row) {//编辑指定行
+                vData.fromEdit = {
+                    status: 1, //0-新增状态;1-编辑状态
+                    Title: "编辑词库" + row.w_id
+                }
+                vData.dialogFormVisible = true;
+                vData.form = row;
+            },
+            wordDetial(row) {
+                let lTabName = row.w_name + "(" + row.w_id + "-" + row.w_name + ")";
+                window.parent.addNewTabs(lTabName, "/views/word/word_temp.html?wid=" + row.w_id);
+            }
+        }
+    })
+
+    //保存数据
+    function saveData() {
+        var vJsonData = {
+            "DATA": JSON.stringify(vData.form),
+            "CMD": vData.fromEdit.status
+        };
+        axios.post("/word/set_data/save_word_table", vJsonData)
+            .then(function (response) {
+                let lret = response.data;
+                if (lret.indexOf("OK") < 0) {
+                    elAlter(VM, lret, 1);
+                    return;
+                }
+                elAlter(VM, lret, 2);
+                vData.dialogFormVisible = false;
+                getData();
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+
+    //删除数据
+    function delData(vValue, nType) {
+        //删除执行
+        let vJsonData = { "DATA": vValue.WID };
+        axios.post("/word/set_data/del_word_table", vJsonData)
+            .then(function (response) {
+                let lret = response.data;
+                if (lret.indexOf("OK") < 0) {
+                    elAlter(VM, lret, 1);
+                    return;
+                }
+                elAlter(VM, lret);
+                getData();
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+
+
+    function btnSearch() {
+        vData.tablePage.currentPage = 1;
+        getData(true);
+    }
+
+    function getData(vIsNewFilter) {
+        if (vIsNewFilter) { //指定条件下才获取新的查询条件
+            vSearchFilter = JSON.stringify(vData.search.form);
+        }
+        let lJsonData = {
+            "SEARCH_FILTER": vSearchFilter,
+            "TABLE_PAGE": JSON.stringify(vData.tablePage)
+        };
+
+        axios.post("/word/set_data/word_table_list", lJsonData)
+            .then(function (response) {
+                let result = JSON.parse(response.data);
+                console.log("结果:",result);
+                vData.tablePage.total = result.total;
+                console.log("结果total:",result.total);
+                vData.tableData = result.data;
+                console.log("tableData:",result.data);
+
+                VM.$nextTick(() => {
+                    if (VM.$refs.tableDataItemRef != undefined) {
+                        VM.$refs.tableDataItemRef.bodyWrapper.scrollTop = 0;
+                    }
+
+                });
+
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+
+    $(function () {
+        getData(true);
+    })
+
+</script>
+
+</html>

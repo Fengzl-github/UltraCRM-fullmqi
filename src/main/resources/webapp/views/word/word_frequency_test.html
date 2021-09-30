@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>接口调用说明</title>
+  <script type="text/javascript" src="/assets/libs/main.js"></script>
+</head>
+<style>
+  .colWord {
+    width: 350px;
+    font-weight: bold;
+    text-align: right;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .rowWord {
+    padding: 5px 0;
+    font-size: 18px;
+  }
+</style>
+
+<body>
+  <div id="appBot" v-cloak>
+    <!--  <el-card class="box-card">
+      <div slot="header">
+        <span>词频测试</span>
+      </div>
+     <div>
+        接口说明:<br>
+        <div>当前接口主要用于其他程序调用,识别关键词或敏感词</div>
+        <div style="padding:10px 0 0 20px;">接口地址：http://ip:端口/word/keysens/query</div>
+        <div style="padding:10px 0 0 20px;color:red;">请求方式：http POST请求,json数据格式 (application/json; charset=UTF-8)</div>
+        <div style="padding:10px 0 0 20px;">传递参数：
+          {"wid":"wid唯一编号","input":"需要检测的内容","wret":0,"wreplace":0,"whlight":0}
+        </div>
+        <div style="padding:5px 0 0 40px;">wid:(不可为空) 唯一编号,是词库集合界面中WID字段,唯一</div>
+        <div style="padding:5px 0 0 40px;">input:(不可为空) 需要检测的内容</div>
+        <div style="padding:5px 0 0 40px;">wret:(可为空) 是否需要回写关键词/敏感词集合 0-不需要,1-需要;默认0-不需要</div>
+        <div style="padding:5px 0 0 40px;">wreplace:(可为空) 是否需要将关键词替换为*好的语句 0-不需要,1-需要;默认0-不需要</div>
+        <div style="padding:5px 0 0 40px;">whlight:(可为空) 是否需返回关键词高亮的语句 0-不需要,1-需要;默认0-不需要</div>
+        <div style="padding:5px 0 0 40px;">wret,wreplace,whlight不可同时为空,至少有一个</div>
+     
+      </div>
+    </el-card> -->
+    <el-card class="box-card">
+      <div slot="header">
+        <span>词频调用演示(暂不开放)</span>
+      </div>
+      <div>
+        <el-form ref="form" :model="form" label-width="80px">
+          <el-form-item label="传递参数">
+            <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 6}" v-model="form.QueryText"></el-input>
+          </el-form-item>
+          <el-form-item label="返回结果">
+            <el-input type="textarea" :autosize="{ minRows: 6, maxRows: 6}" v-model="form.QueryRet"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="onSubmit">测试接口</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div>
+        <h5 style="color: brown;">返回结果参数显示和说明:</h5>
+        <el-row type="flex" class="rowWord">
+          <el-col class="colWord">服务端词检测时间(WTIME):</el-col>
+          <el-col>{{testWordJson.WTIME}} 毫秒 </el-col>
+        </el-row>
+        <el-row type="flex" class="rowWord">
+          <el-col class="colWord">词频统计(WFRE):</el-col>
+          <el-col>
+            <pre>{{testWordJson.WFRE}}</pre>
+          </el-col>
+        </el-row>
+      </div>
+    </el-card>
+  </div>
+  <script type="text/javascript">
+    var vData = {
+      form: {
+        QueryText: "{\"input\":\"查询内容\"}",
+        QueryRet: ""
+      },
+      testWordJson: '',
+    };
+
+    //创建vue
+    var VM = new Vue({
+      el: '#appBot',
+      data: vData,
+      methods: {
+        onSubmit() {
+          getSearchResult();
+        }
+      }
+    })
+
+    //保存数据
+    function getSearchResult() {
+      axios.post("/word/frequency/query", JSON.parse(vData.form.QueryText))
+        .then(function (response) {
+          vData.form.QueryRet = JSON.stringify(response.data);
+          if (response.data.ret == "OK") {
+            vData.testWordJson = response.data.data;
+          }
+
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+
+
+  </script>
+</body>
+
+</html>
