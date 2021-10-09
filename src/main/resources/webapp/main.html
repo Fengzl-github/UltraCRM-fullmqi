@@ -99,6 +99,19 @@
 		websocket.onclose = function () {
 			console.log("WebSocket连接关闭")
 		};
+
+
+		$(function () {
+			axios.post("/util/getServerDomainAndPort")
+					.then(function (response) {
+						let lRet = response.data;
+						console.log("获取项目请求地址和端口:", lRet);
+					})
+					.catch(function (error) {
+						console.log(error);
+					});
+
+		})
 	</script>
 </body>
 

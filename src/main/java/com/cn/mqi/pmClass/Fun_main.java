@@ -23,8 +23,8 @@ public class Fun_main {
     /**
      * 配置文件目录
      */
-    public final static String iniFileParentPath = ".\\data";
-    public final static String iniFilePath = ".\\data\\UltraCRM.ini";
+    public final static String iniFileParentPath = "." + File.separator + "data";
+    public final static String iniFilePath = "." + File.separator + "data" + File.separator + "UltraCRM.ini";
 
     /**
      * 获取系统参数配置
@@ -52,7 +52,7 @@ public class Fun_main {
             log.info("配置文件UltraCRM.ini不存在,创建");
             saveParaIni();
         } else {
-            log.info("配置文件UltraCRM.ini存在,读取文件获取系统参数");
+            log.info("配置文件UltraCRM.ini存在,路径:{}, 读取文件获取系统参数", file.getAbsolutePath());
             readParaIni();
         }
 

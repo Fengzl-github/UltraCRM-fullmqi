@@ -34,5 +34,10 @@ public class PmSys {
     public static String login_uid; //登录账号
     public static String login_pwd; //登录密码
 
+    /**
+     * 日志文件存储路径
+     */
+    public static String log_file_path;
+
 
 }

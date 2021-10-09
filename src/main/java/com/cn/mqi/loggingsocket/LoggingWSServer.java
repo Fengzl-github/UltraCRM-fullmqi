@@ -1,5 +1,6 @@
 package com.cn.mqi.loggingsocket;
 
+import com.cn.mqi.base.PmSys;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -49,7 +50,7 @@ public class LoggingWSServer {
                 BufferedReader reader = null;
                 try {
                     //日志文件路径，获取最新的
-                    String filePath = "D:\\myLogs\\mqi\\mqiLog." + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ".log";
+                    String filePath = PmSys.log_file_path + "mqiLog." + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ".log";
 
                     //字符流
                     reader = new BufferedReader(new FileReader(filePath));
@@ -104,6 +105,7 @@ public class LoggingWSServer {
                 } catch (Exception e) {
                     //捕获但不处理
                     e.printStackTrace();
+                    log.error("日志文件路径不存在");
                 } finally {
                     try {
                         reader.close();

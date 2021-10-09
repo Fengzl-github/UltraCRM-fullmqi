@@ -6,6 +6,7 @@ import com.cn.common.vo.ResResult;
 import com.cn.mqi.base.PmSys;
 import com.cn.mqi.jwt.PmJwtToken;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,9 @@ import java.util.Map;
 @RequestMapping("/sys")
 public class LoginCtrl {
 
+    @Value("${log.path}")
+    private String logFilePath;
+
     @PostMapping("/login/verification")
     public ResResult login(String uid, String pwd) {
 
@@ -34,6 +38,9 @@ public class LoginCtrl {
             //生成唯一认证token
             String strTokenJson = JSONObject.toJSONString(htRet);
             log.info("系统登录,token:{}", strTokenJson);
+
+            //登录成功后,保存日志的存储路径,以便websocket中使用
+            PmSys.log_file_path = logFilePath;
 
             return ResCode.OK.msg("登录成功")
                     .putData("TOKEN", PmJwtToken.getJwtToken(uid, strTokenJson));
