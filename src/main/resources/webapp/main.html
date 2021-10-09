@@ -2,117 +2,112 @@
 <html>
 
 <head>
-	<meta charset="UTF-8">
-	<title></title>
-	<script type="text/javascript" src="/assets/libs/main.js"></script>
-	<style>
-		html {
-			font-family: "微软雅黑", "宋体", Arial, sans-serif;
-			font-size: 12px;
-			-ms-text-size-adjust: 100%;
-			-webkit-text-size-adjust: 100%;
-			height: 100%;
-			width: 100%;
-		}
-	</style>
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="/assets/libs/main.js"></script>
+    <style>
+        html {
+            font-family: "微软雅黑", "宋体", Arial, sans-serif;
+            font-size: 12px;
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
-	<div id="appfs">
-		<el-card class="box-card" style="font-size: large;">
-			<div slot="header">
-				<span>UltraCRM_MQI V6.0.0 版</span>
-				<span style="margin-left: 100px; color: #01AAED;">工作模式：独立</span>
-				<span style="margin-left: 200px; color: #1AA094;"></span>
-				<el-button style="margin-left: 120px;" type="success" @click="clearLog">清空日志</el-button>
-				<el-button style="margin-left: 20px;" type="info" @click="toBottom">滚动至底部</el-button>
-			</div>
-			<div id="log-container"
-				style="height:600px; overflow-y: scroll; background: #2F4056; color: #aaa; padding: 10px;">
-				<div v-for="log in logInfo" :key="log">
-<!--					{{log}}-->
-					<pre v-html="log"></pre>
-				</div>
+<div id="appfs">
+    <el-card class="box-card" style="font-size: large;">
+        <div slot="header">
+            <span>UltraCRM_MQI V6.0.0 版</span>
+            <span style="margin-left: 100px; color: #01AAED;">工作模式：独立</span>
+            <span style="margin-left: 200px; color: #1AA094;"></span>
+            <el-button style="margin-left: 120px;" type="success" @click="clearLog">清空日志</el-button>
+            <el-button style="margin-left: 20px;" type="info" @click="toBottom">滚动至底部</el-button>
+        </div>
+        <div id="log-container"
+             style="height:600px; overflow-y: scroll; background: #2F4056; color: #aaa; padding: 10px;">
+            <div v-for="log in logInfo" :key="log">
+                <!--					{{log}}-->
+                <pre v-html="log"></pre>
+            </div>
 
-			</div>
-		</el-card>
-	</div>
+        </div>
+    </el-card>
+</div>
 
-	<script>
-		let vData = {
-			logInfo: []
-		};
-		//创建vue
-		let VM = new Vue({
-			el: '#appfs',
-			data: vData,
-			methods: {
-				clearLog() {
-					vData.logInfo = [];
-				},
-				toBottom(){
-					$('#log-container').scrollTop($('#log-container')[0].scrollHeight);
-				}
-			}
-		});
-
-
-		//websocket对象
-		let websocket = null;
-
-		//判断当前浏览器是否支持WebSocket
-		if ('WebSocket' in window) {
-			websocket = new WebSocket("ws://localhost:6099/websocket/logging");
-		} else {
-			console.error("不支持WebSocket");
-		}
-
-		//连接发生错误的回调方法
-		websocket.onerror = function (e) {
-			console.error("WebSocket连接发生错误");
-		};
-
-		//连接成功建立的回调方法
-		websocket.onopen = function () {
-			console.log("WebSocket连接成功")
-		};
-
-		//接收到消息的回调方法
-		websocket.onmessage = function (event) {
-			//追加
-			if (event.data) {
-
-				console.log("新内容:", event.data);
-				//日志内容
-				vData.logInfo.push(event.data);
-
-				$('#log-container').scrollTop($('#log-container')[0].scrollHeight);
-				//是否开启自动底部
-				/*if (window.loggingAutoBottom) {
-					//滚动条自动到最底部
-					$loggingText.scrollTop($loggingText[0].scrollHeight);
-				}*/
-			}
-		}
-
-		//连接关闭的回调方法
-		websocket.onclose = function () {
-			console.log("WebSocket连接关闭")
-		};
+<script>
+    let vData = {
+        logInfo: []
+    };
+    //创建vue
+    let VM = new Vue({
+        el: '#appfs',
+        data: vData,
+        methods: {
+            clearLog() {
+                vData.logInfo = [];
+            },
+            toBottom() {
+                $('#log-container').scrollTop($('#log-container')[0].scrollHeight);
+            }
+        }
+    });
 
 
-		$(function () {
-			axios.post("/util/getServerDomainAndPort")
-					.then(function (response) {
-						let lRet = response.data;
-						console.log("获取项目请求地址和端口:", lRet);
-					})
-					.catch(function (error) {
-						console.log(error);
-					});
+    //websocket对象
+    let websocket = null;
 
-		})
-	</script>
+    //判断当前浏览器是否支持WebSocket
+    if ('WebSocket' in window) {
+        try {
+            console.log("连接websocket: ", myUtil.getLookie("websocket_Url"));
+            websocket = new WebSocket("ws://" + myUtil.getLookie("websocket_Url") + "/websocket/logging");
+        } catch (e) {
+            vData.logInfo = ['暂不支持日志输出!!!!!!!!!!'];
+        }
+
+    } else {
+        console.error("不支持WebSocket");
+    }
+
+    //连接发生错误的回调方法
+    websocket.onerror = function (e) {
+        console.error("WebSocket连接发生错误");
+    };
+
+    //连接成功建立的回调方法
+    websocket.onopen = function () {
+        console.log("WebSocket连接成功")
+    };
+
+    //接收到消息的回调方法
+    websocket.onmessage = function (event) {
+        //追加
+        if (event.data) {
+
+            console.log("新内容:", event.data);
+            //日志内容
+            vData.logInfo.push(event.data);
+
+            $('#log-container').scrollTop($('#log-container')[0].scrollHeight);
+            //是否开启自动底部
+            /*if (window.loggingAutoBottom) {
+                //滚动条自动到最底部
+                $loggingText.scrollTop($loggingText[0].scrollHeight);
+            }*/
+        }
+    };
+
+    //连接关闭的回调方法
+    websocket.onclose = function () {
+        console.log("WebSocket连接关闭")
+    };
+
+
+</script>
 </body>
 
 </html>

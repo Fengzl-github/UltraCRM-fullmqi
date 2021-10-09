@@ -80,6 +80,7 @@
                     console.log("lret==", lret);
                     if (lret.code === 200) {
                         myUtil.setToken(lret.data.TOKEN);
+                        myUtil.setLookie("websocket_Url",lret.data.websocketUrl);
                         document.location.href = "myindex.html";
                     } else {
                         vData.retInfo = lret.msg;

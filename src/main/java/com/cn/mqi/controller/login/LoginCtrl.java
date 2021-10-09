@@ -26,6 +26,8 @@ public class LoginCtrl {
 
     @Value("${log.path}")
     private String logFilePath;
+    @Value("${server.domain}")
+    private String serverDomain;
 
     @PostMapping("/login/verification")
     public ResResult login(String uid, String pwd) {
@@ -41,9 +43,12 @@ public class LoginCtrl {
 
             //登录成功后,保存日志的存储路径,以便websocket中使用
             PmSys.log_file_path = logFilePath;
+            //获取websocket请求路径,以便前端使用
+            String websocketUrl = serverDomain + ":" + PmSys.Server_Port;
 
             return ResCode.OK.msg("登录成功")
-                    .putData("TOKEN", PmJwtToken.getJwtToken(uid, strTokenJson));
+                    .putData("TOKEN", PmJwtToken.getJwtToken(uid, strTokenJson))
+                    .putData("websocketUrl", websocketUrl);
         } else {
 
             return ResCode.ERROR.msg("账号或密码不正确");
